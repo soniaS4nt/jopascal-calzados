@@ -12,23 +12,27 @@ export default async function HomePage() {
   const payloadConfig = await config
   const payload = await getPayload({ config: payloadConfig })
   const { user } = await payload.auth({ headers })
-
+  const { docs: products } = await payload.find({
+    collection: 'products',
+  })
   const fileURL = `vscode://file/${fileURLToPath(import.meta.url)}`
 
   return (
     <div className="home">
       <div className="content">
-        <picture>
-          <source srcSet="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-favicon.svg" />
-          <Image
-            alt="Payload Logo"
-            height={65}
-            src="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-favicon.svg"
-            width={65}
-          />
-        </picture>
-        {!user && <h1>Welcome to your new project.</h1>}
-        {user && <h1>Welcome back, {user.email}</h1>}
+        {products.map((product) => (
+          <div key={product.id} className="product-card">
+            <Image
+              src={(product['Product Image'] as { url: string }).url}
+              alt={product['Product Name']}
+              width={200}
+              height={200}
+            />
+            <h2>{product['Product Name']}</h2>
+            <p>{product['Product Description']}</p>
+            <p className="price">${product['Product Price']}</p>
+          </div>
+        ))}
         <div className="links">
           <a
             className="admin"
