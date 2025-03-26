@@ -1,9 +1,8 @@
 import React from 'react'
-//import './styles.css'
 
 export const metadata = {
-  description: 'A blank template using Payload in a Next.js app.',
-  title: 'Payload Blank Template',
+  description: 'Calzados hechos a mano 100% cuero, venta de unidades y al por mayor',
+  title: 'Jo Pascal Calzados',
 }
 
 import './globals.css'
@@ -14,7 +13,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
-    <html lang="en">
+    <html lang="es">
       <body>
         <div className="flex flex-col min-h-screen">
           <Navbar />
