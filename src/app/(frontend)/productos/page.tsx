@@ -4,8 +4,14 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { getPayload } from 'payload'
+import payloadConfig from '@/payload.config'
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const payload = await getPayload({ config: payloadConfig })
+  const { docs: products } = await payload.find({
+    collection: 'products',
+  })
   return (
     <div className="container px-4 md:px-6 py-12">
       <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-10">
@@ -94,18 +100,18 @@ export default function ProductsPage() {
               <Card key={product.id} className="overflow-hidden border-stone-200">
                 <Link href={`/productos/${product.id}`} className="relative block aspect-square">
                   <Image
-                    src={product.image || '/placeholder.svg'}
-                    alt={product.name}
+                    src={(product['Product Image'] as { url: string }).url}
+                    alt={product['Product Name']}
                     fill
                     className="object-cover transition-transform hover:scale-105"
                   />
                 </Link>
                 <CardContent className="p-4">
                   <Link href={`/productos/${product.id}`}>
-                    <h3 className="font-medium text-lg">{product.name}</h3>
+                    <h3 className="font-medium text-lg">{product['Product Name']}</h3>
                   </Link>
-                  <p className="text-stone-600 mt-1">{product.category}</p>
-                  <p className="font-medium mt-2">{product.price}</p>
+                  <p className="text-stone-600 mt-1">{product['Product Description']}</p>
+                  <p className="font-medium mt-2">${product['Product Price']}</p>
                 </CardContent>
                 <CardFooter className="p-4 pt-0">
                   <Button variant="outline" className="w-full">
@@ -138,90 +144,3 @@ export default function ProductsPage() {
     </div>
   )
 }
-
-const products = [
-  {
-    id: '1',
-    name: 'Botín Artesanal Cuero Café',
-    category: 'Botines',
-    price: '$89.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '2',
-    name: 'Zapato Oxford Cuero Natural',
-    category: 'Zapatos',
-    price: '$79.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '3',
-    name: 'Mocasín Cuero Miel',
-    category: 'Mocasines',
-    price: '$69.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '4',
-    name: 'Botín Chelsea Cuero Negro',
-    category: 'Botines',
-    price: '$94.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '5',
-    name: 'Zapato Derby Cuero Café',
-    category: 'Zapatos',
-    price: '$84.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '6',
-    name: 'Sandalia Cuero Natural',
-    category: 'Sandalias',
-    price: '$59.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '7',
-    name: 'Botín Trabajo Cuero Café',
-    category: 'Botines',
-    price: '$99.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '8',
-    name: 'Zapato Monk Cuero Negro',
-    category: 'Zapatos',
-    price: '$89.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '9',
-    name: 'Mocasín Penny Cuero Miel',
-    category: 'Mocasines',
-    price: '$74.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '10',
-    name: 'Botín Desert Cuero Natural',
-    category: 'Botines',
-    price: '$84.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '11',
-    name: 'Zapato Brogue Cuero Café',
-    category: 'Zapatos',
-    price: '$89.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-  {
-    id: '12',
-    name: 'Sandalia Trekking Cuero Café',
-    category: 'Sandalias',
-    price: '$64.990',
-    image: '/placeholder.svg?height=400&width=400',
-  },
-]
