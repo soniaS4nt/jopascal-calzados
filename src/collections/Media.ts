@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import path from 'path'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -14,7 +13,7 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    staticDir: path.resolve(__dirname, '../../../media'),
+    staticDir: 'media',
     imageSizes: [
       {
         name: 'thumbnail',
