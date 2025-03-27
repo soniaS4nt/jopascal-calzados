@@ -6,7 +6,6 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { getPayload } from 'payload'
 import payloadConfig from '@/payload.config'
-import { ProductImage } from '@/components/productImage'
 
 export default async function ProductsPage() {
   const payload = await getPayload({ config: payloadConfig })
@@ -100,13 +99,12 @@ export default async function ProductsPage() {
             {products.map((product) => (
               <Card key={product.id} className="overflow-hidden border-stone-200">
                 <Link href={`/productos/${product.id}`} className="relative block aspect-square">
-                  {/*  <Image
+                  <Image
                     src={(product['Product Image'] as { url: string }).url}
                     alt={product['Product Name']}
                     fill
                     className="object-cover transition-transform hover:scale-105"
-                  /> */}
-                  <ProductImage product={product} />
+                  />
                 </Link>
                 <CardContent className="p-4">
                   <Link href={`/productos/${product.id}`}>
