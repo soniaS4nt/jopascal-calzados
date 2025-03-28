@@ -18,7 +18,6 @@
     "@payloadcms/db-mongodb": "latest",
     "@payloadcms/next": "latest",
     "@payloadcms/payload-cloud": "latest",
-    "@payloadcms/plugin-cloud-storage": "^3.31.0",
     "@payloadcms/richtext-lexical": "latest",
     "@payloadcms/storage-uploadthing": "^3.31.0",
     "@radix-ui/react-alert-dialog": "^1.1.6",

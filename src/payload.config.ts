@@ -41,7 +41,7 @@ export default buildConfig({
   plugins: [
     payloadCloudPlugin(),
     // storage-adapter-placeholder
-    uploadthingStorage({
+    /*  uploadthingStorage({
       collections: {
         media: true,
       },
@@ -49,6 +49,6 @@ export default buildConfig({
         token: process.env.UPLOADTHING_TOKEN,
         acl: 'public-read',
       },
-    }),
+    }), */
   ],
 })
