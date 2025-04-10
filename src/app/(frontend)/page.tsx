@@ -21,16 +21,21 @@ export default function Home() {
         <div className="container relative z-10 px-4 md:px-6">
           <div className="max-w-2xl space-y-4">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl text-white">
-              Artesanía en Cuero Chileno
+              Calzados 100% cuero
             </h1>
             <p className="text-xl text-white/90 max-w-[600px]">
               Calzado artesanal de cuero hecho a mano con las mejores materias primas de Chile.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" asChild>
+              <Button size="lg" className="bg-amber-600 hover:bg-amber-800" asChild>
                 <Link href="/productos">Ver Productos</Link>
               </Button>
-              <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm" asChild>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white/10 backdrop-blur-sm text-white hover:text-black"
+                asChild
+              >
                 <Link href="/personalizar">
                   Diseña Tu Propio Calzado
                   <ArrowRight className="ml-2 h-4 w-4" />
