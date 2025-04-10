@@ -1,8 +1,8 @@
-import Image from "next/image"
-import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import Image from 'next/image'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 
 export default function Home() {
   return (
@@ -11,7 +11,7 @@ export default function Home() {
       <section className="relative h-[70vh] flex items-center">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/placeholder.svg?height=1080&width=1920"
+            src="./images/cuero.webp"
             alt="Handcrafted leather shoes"
             fill
             className="object-cover brightness-75"
@@ -49,7 +49,8 @@ export default function Home() {
               Nuestros Productos Destacados
             </h2>
             <p className="max-w-[700px] text-stone-600">
-              Descubre nuestra colección de calzado artesanal hecho a mano con cuero genuino chileno.
+              Descubre nuestra colección de calzado artesanal hecho a mano con cuero genuino
+              chileno.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
@@ -57,7 +58,7 @@ export default function Home() {
               <Link key={product.id} href={`/productos/${product.id}`} className="group">
                 <div className="relative aspect-square overflow-hidden rounded-lg bg-stone-100">
                   <Image
-                    src={product.image || "/placeholder.svg"}
+                    src={product.image || '/placeholder.svg'}
                     alt={product.name}
                     width={400}
                     height={400}
@@ -84,10 +85,12 @@ export default function Home() {
         <div className="container px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Diseña Tu Propio Calzado</h2>
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+                Diseña Tu Propio Calzado
+              </h2>
               <p className="text-stone-300">
-                Sube tu diseño y nuestros artesanos lo convertirán en un calzado único. Pedidos al por mayor desde 6
-                pares.
+                Sube tu diseño y nuestros artesanos lo convertirán en un calzado único. Pedidos al
+                por mayor desde 6 pares.
               </p>
               <ul className="space-y-3">
                 <li className="flex items-center gap-2">
@@ -132,14 +135,16 @@ export default function Home() {
               />
             </div>
             <div className="space-y-6">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-stone-800">Tradición Artesanal</h2>
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-stone-800">
+                Tradición Artesanal
+              </h2>
               <p className="text-stone-600">
-                Nuestros zapatos son elaborados por maestros artesanos chilenos con décadas de experiencia, utilizando
-                técnicas tradicionales y los mejores cueros locales.
+                Nuestros zapatos son elaborados por maestros artesanos chilenos con décadas de
+                experiencia, utilizando técnicas tradicionales y los mejores cueros locales.
               </p>
               <p className="text-stone-600">
-                Cada par es único, con atención meticulosa a los detalles y acabados que garantizan calidad y
-                durabilidad.
+                Cada par es único, con atención meticulosa a los detalles y acabados que garantizan
+                calidad y durabilidad.
               </p>
               <Button variant="outline" className="border-stone-300" asChild>
                 <Link href="/nosotros">Conoce Nuestra Historia</Link>
@@ -154,22 +159,21 @@ export default function Home() {
 
 const featuredProducts = [
   {
-    id: "1",
-    name: "Botín Artesanal Cuero Café",
-    price: "$89.990",
-    image: "/placeholder.svg?height=400&width=400",
+    id: '1',
+    name: 'Botín Artesanal Cuero Café',
+    price: '$89.990',
+    image: '/placeholder.svg?height=400&width=400',
   },
   {
-    id: "2",
-    name: "Zapato Oxford Cuero Natural",
-    price: "$79.990",
-    image: "/placeholder.svg?height=400&width=400",
+    id: '2',
+    name: 'Zapato Oxford Cuero Natural',
+    price: '$79.990',
+    image: '/placeholder.svg?height=400&width=400',
   },
   {
-    id: "3",
-    name: "Mocasín Cuero Miel",
-    price: "$69.990",
-    image: "/placeholder.svg?height=400&width=400",
+    id: '3',
+    name: 'Mocasín Cuero Miel',
+    price: '$69.990',
+    image: '/placeholder.svg?height=400&width=400',
   },
 ]
-
