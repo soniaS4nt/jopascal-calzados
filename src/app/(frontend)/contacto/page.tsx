@@ -1,11 +1,4 @@
-import Image from "next/image"
-import { Mail, MapPin, Phone } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent } from '@/components/ui/card'
 
 export default function ContactPage() {
   return (
@@ -19,7 +12,7 @@ export default function ContactPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="space-y-8">
+          {/*    <div className="space-y-8">
             <Card>
               <CardContent className="p-6">
                 <form className="space-y-6">
@@ -76,9 +69,9 @@ export default function ContactPage() {
               </Card>
             </div>
           </div>
-
-          <div className="space-y-8">
-            <div className="relative h-[300px] rounded-lg overflow-hidden">
+ */}
+          {/*   <div className="space-y-8"> */}
+          {/* <div className="relative h-[300px] rounded-lg overflow-hidden">
               <Image
                 src="/placeholder.svg?height=600&width=800"
                 alt="Mapa de ubicación"
@@ -90,65 +83,66 @@ export default function ContactPage() {
                   Mapa de ubicación (Reemplazar con Google Maps)
                 </p>
               </div>
-            </div>
+            </div> */}
 
-            <Card>
-              <CardContent className="p-6 space-y-4">
-                <h3 className="text-xl font-medium">Horarios de Atención</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Lunes a Viernes</span>
-                    <span>9:00 - 18:00</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Sábado</span>
-                    <span>10:00 - 14:00</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Domingo</span>
-                    <span>Cerrado</span>
-                  </div>
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <h3 className="text-xl font-medium">Horarios de Atención</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Lunes a Viernes</span>
+                  <span>9:00 - 18:00</span>
                 </div>
-                <div className="pt-4 border-t">
-                  <h4 className="font-medium mb-2">Visitas al Taller</h4>
+                <div className="flex justify-between">
+                  <span>Sábado</span>
+                  <span>10:00 - 14:00</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Domingo</span>
+                  <span>Cerrado</span>
+                </div>
+              </div>
+              <div className="pt-4 border-t">
+                <h4 className="font-medium mb-2">Visitas al Taller</h4>
+                <p className="text-sm text-stone-600">
+                  Si deseas conocer nuestro taller y ver el proceso de fabricación, puedes agendar
+                  una visita contactándonos previamente por teléfono o email.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <h3 className="text-xl font-medium">Preguntas Frecuentes</h3>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium">¿Realizan envíos a todo Chile?</h4>
                   <p className="text-sm text-stone-600">
-                    Si deseas conocer nuestro taller y ver el proceso de fabricación, puedes agendar una visita
-                    contactándonos previamente por teléfono o email.
+                    Sí, realizamos envíos a todo Chile y también exportamos a países limítrofes.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6 space-y-4">
-                <h3 className="text-xl font-medium">Preguntas Frecuentes</h3>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium">¿Realizan envíos a todo Chile?</h4>
-                    <p className="text-sm text-stone-600">
-                      Sí, realizamos envíos a todo Chile y también exportamos a países limítrofes.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">¿Cuánto tiempo toma fabricar un pedido personalizado?</h4>
-                    <p className="text-sm text-stone-600">
-                      Los pedidos personalizados toman entre 2 a 3 semanas, dependiendo de la complejidad del diseño y
-                      la cantidad.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">¿Ofrecen garantía por sus productos?</h4>
-                    <p className="text-sm text-stone-600">
-                      Todos nuestros productos tienen garantía de 6 meses por defectos de fabricación.
-                    </p>
-                  </div>
+                <div>
+                  <h4 className="font-medium">
+                    ¿Cuánto tiempo toma fabricar un pedido personalizado?
+                  </h4>
+                  <p className="text-sm text-stone-600">
+                    Los pedidos personalizados toman entre 2 a 3 semanas, dependiendo de la
+                    complejidad del diseño y la cantidad.
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div>
+                  <h4 className="font-medium">¿Ofrecen garantía por sus productos?</h4>
+                  <p className="text-sm text-stone-600">
+                    Todos nuestros productos tienen garantía de 6 meses por defectos de fabricación.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          {/*  </div> */}
         </div>
       </div>
     </div>
   )
 }
-
