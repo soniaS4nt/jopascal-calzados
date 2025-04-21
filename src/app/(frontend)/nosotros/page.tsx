@@ -32,19 +32,19 @@ export default function AboutPage() {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold tracking-tighter">Nuestros Inicios</h2>
             <p className="text-stone-600">
-              CueroChile nació en 1985 de la pasión de Don Manuel Soto, un maestro artesano con más
-              de 40 años de experiencia en el trabajo del cuero. Lo que comenzó como un pequeño
-              taller familiar en Santiago, se ha convertido en una empresa reconocida por la calidad
-              y el diseño de sus productos.
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Dicta possimus minima nisi
+              consectetur repellat alias, quae reiciendis, facilis rerum cupiditate voluptate
+              ratione. Est pariatur accusantium iusto in suscipit asperiores odit.
             </p>
             <p className="text-stone-600">
-              Desde nuestros inicios, nos hemos dedicado a preservar las técnicas tradicionales de
-              fabricación de calzado, combinándolas con diseños contemporáneos que satisfacen las
-              necesidades y gustos de nuestros clientes.
+              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Officiis in obcaecati ea,
+              nostrum fugit, dicta corporis blanditiis dolor ipsa architecto esse mollitia pariatur,
+              consequatur veritatis! Sunt incidunt minima sequi molestias?
             </p>
             <p className="text-stone-600">
-              Hoy, la segunda generación de la familia Soto continúa el legado, manteniendo la
-              esencia artesanal pero incorporando innovaciones en diseño y procesos de producción.
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis quo vero tempora soluta
+              odio doloremque quae reprehenderit eum, officiis porro repellendus magnam dolor esse
+              rerum nesciunt omnis exercitationem! Reiciendis, sapiente.
             </p>
           </div>
         </div>
@@ -226,7 +226,7 @@ export default function AboutPage() {
         </div>
 
         {/* Team Section */}
-        <div className="mb-16">
+        {/*    <div className="mb-16">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold tracking-tighter">Nuestro Equipo</h2>
             <p className="mt-2 text-stone-600">Maestros artesanos con décadas de experiencia</p>
@@ -247,7 +247,7 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Workshop Images */}
         <div className="mb-16">

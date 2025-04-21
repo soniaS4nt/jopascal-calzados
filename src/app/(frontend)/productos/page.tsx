@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Filter, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Filter, X } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
@@ -117,6 +117,54 @@ const allProducts = [
     category: 'Sandalias',
     price: 64990,
     color: 'café',
+    image: '/placeholder.svg?height=400&width=400',
+  },
+  {
+    id: '13',
+    name: 'Botín Montaña Cuero Negro',
+    category: 'Botines',
+    price: 109990,
+    color: 'negro',
+    image: '/placeholder.svg?height=400&width=400',
+  },
+  {
+    id: '14',
+    name: 'Zapato Casual Cuero Miel',
+    category: 'Zapatos',
+    price: 74990,
+    color: 'miel',
+    image: '/placeholder.svg?height=400&width=400',
+  },
+  {
+    id: '15',
+    name: 'Mocasín Clásico Cuero Negro',
+    category: 'Mocasines',
+    price: 69990,
+    color: 'negro',
+    image: '/placeholder.svg?height=400&width=400',
+  },
+  {
+    id: '16',
+    name: 'Botín Urbano Cuero Natural',
+    category: 'Botines',
+    price: 89990,
+    color: 'natural',
+    image: '/placeholder.svg?height=400&width=400',
+  },
+  {
+    id: '17',
+    name: 'Zapato Formal Cuero Café',
+    category: 'Zapatos',
+    price: 94990,
+    color: 'café',
+    image: '/placeholder.svg?height=400&width=400',
+  },
+  {
+    id: '18',
+    name: 'Sandalia Playa Cuero Miel',
+    category: 'Sandalias',
+    price: 54990,
+    color: 'miel',
     image: '/placeholder.svg?height=400&width=400',
   },
 ]
@@ -241,8 +289,8 @@ function FilterContent({
           <div>
             <h3 className="text-lg font-medium mb-4">Categorías</h3>
             <div className="space-y-3">
-              {categoryOptions.map((category, index) => (
-                <div key={`${category}-${index}`} className="flex items-center space-x-2">
+              {categoryOptions.map((category) => (
+                <div key={category} className="flex items-center space-x-2">
                   <Checkbox
                     id={`category-${category.toLowerCase()}${isMobile ? '-mobile' : ''}`}
                     checked={selectedCategories.includes(category)}
@@ -331,6 +379,107 @@ function FilterContent({
   )
 }
 
+// Componente de Paginación
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  loading,
+}: {
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+  loading: boolean
+}) {
+  // Generar array de páginas a mostrar
+  const getPageNumbers = () => {
+    const pages = []
+    const maxPagesToShow = 5 // Número máximo de páginas a mostrar
+
+    if (totalPages <= maxPagesToShow) {
+      // Si hay menos páginas que el máximo, mostrar todas
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      // Siempre mostrar la primera página
+      pages.push(1)
+
+      // Calcular el rango de páginas a mostrar alrededor de la página actual
+      let startPage = Math.max(2, currentPage - 1)
+      let endPage = Math.min(totalPages - 1, currentPage + 1)
+
+      // Ajustar si estamos cerca del inicio o final
+      if (currentPage <= 2) {
+        endPage = 4
+      } else if (currentPage >= totalPages - 1) {
+        startPage = totalPages - 3
+      }
+
+      // Agregar elipsis si es necesario
+      if (startPage > 2) {
+        pages.push('...')
+      }
+
+      // Agregar páginas intermedias
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i)
+      }
+
+      // Agregar elipsis si es necesario
+      if (endPage < totalPages - 1) {
+        pages.push('...')
+      }
+
+      // Siempre mostrar la última página
+      if (totalPages > 1) {
+        pages.push(totalPages)
+      }
+    }
+
+    return pages
+  }
+
+  const pageNumbers = getPageNumbers()
+
+  return (
+    <div className="flex flex-wrap justify-center items-center gap-2">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1 || loading}
+        aria-label="Página anterior"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+
+      {pageNumbers.map((page, index) => (
+        <Button
+          key={index}
+          variant={currentPage === page ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => typeof page === 'number' && onPageChange(page)}
+          disabled={typeof page !== 'number' || loading}
+          className={typeof page !== 'number' ? 'cursor-default hover:bg-transparent' : ''}
+        >
+          {page}
+        </Button>
+      ))}
+
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages || loading}
+        aria-label="Página siguiente"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  )
+}
+
 export default function ProductsPage() {
   // Estados para los filtros
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -341,6 +490,11 @@ export default function ProductsPage() {
   const [filterLoading, setFilterLoading] = useState(false)
   const [products, setProducts] = useState<typeof allProducts>([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+
+  // Estados para la paginación
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageLoading, setPageLoading] = useState(false)
+  const productsPerPage = 6
 
   // Cargar productos inicialmente
   useEffect(() => {
@@ -365,6 +519,7 @@ export default function ProductsPage() {
   // Manejadores de cambio de filtros
   const handleCategoryChange = (category: string) => {
     setFilterLoading(true)
+    setCurrentPage(1) // Volver a la primera página al cambiar filtros
 
     setSelectedCategories((prev) => {
       if (prev.includes(category)) {
@@ -385,6 +540,7 @@ export default function ProductsPage() {
 
   const handleColorChange = (color: string) => {
     setFilterLoading(true)
+    setCurrentPage(1) // Volver a la primera página al cambiar filtros
 
     setSelectedColors((prev) => {
       if (prev.includes(color)) {
@@ -405,6 +561,7 @@ export default function ProductsPage() {
 
   const handlePriceChange = (priceId: string) => {
     setFilterLoading(true)
+    setCurrentPage(1) // Volver a la primera página al cambiar filtros
 
     const priceRange = priceRanges.find((range) => range.id === priceId)
     if (!priceRange) return
@@ -441,6 +598,7 @@ export default function ProductsPage() {
   // Remover un filtro activo
   const removeFilter = (filter: string) => {
     setFilterLoading(true)
+    setCurrentPage(1) // Volver a la primera página al cambiar filtros
 
     const [type, value] = filter.split(': ')
 
@@ -466,6 +624,7 @@ export default function ProductsPage() {
   // Limpiar todos los filtros
   const clearAllFilters = () => {
     setFilterLoading(true)
+    setCurrentPage(1) // Volver a la primera página al limpiar filtros
 
     setSelectedCategories([])
     setSelectedColors([])
@@ -478,33 +637,63 @@ export default function ProductsPage() {
     }, 500)
   }
 
+  // Cambiar de página
+  const handlePageChange = (pageNumber: number) => {
+    if (pageNumber === currentPage) return
+
+    setPageLoading(true)
+    setCurrentPage(pageNumber)
+
+    // Simular tiempo de carga al cambiar de página
+    setTimeout(() => {
+      setPageLoading(false)
+      // Scroll hacia arriba suavemente
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 500)
+  }
+
   // Filtrar productos
-  const filteredProducts = products.filter((product) => {
-    // Filtro por categoría
-    if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) {
-      return false
-    }
-
-    // Filtro por color
-    if (selectedColors.length > 0 && !selectedColors.includes(product.color)) {
-      return false
-    }
-
-    // Filtro por rango de precio
-    if (selectedPriceRanges.length > 0) {
-      const inPriceRange = selectedPriceRanges.some((rangeId) => {
-        const range = priceRanges.find((r) => r.id === rangeId)
-        if (!range) return false
-        return product.price >= range.min && product.price <= range.max
-      })
-
-      if (!inPriceRange) {
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      // Filtro por categoría
+      if (selectedCategories.length > 0 && !selectedCategories.includes(product.category)) {
         return false
       }
-    }
 
-    return true
-  })
+      // Filtro por color
+      if (selectedColors.length > 0 && !selectedColors.includes(product.color)) {
+        return false
+      }
+
+      // Filtro por rango de precio
+      if (selectedPriceRanges.length > 0) {
+        const inPriceRange = selectedPriceRanges.some((rangeId) => {
+          const range = priceRanges.find((r) => r.id === rangeId)
+          if (!range) return false
+          return product.price >= range.min && product.price <= range.max
+        })
+
+        if (!inPriceRange) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [products, selectedCategories, selectedColors, selectedPriceRanges])
+
+  // Calcular total de páginas
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage)
+
+  // Obtener productos de la página actual
+  const currentProducts = useMemo(() => {
+    const indexOfLastProduct = currentPage * productsPerPage
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage
+    return filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct)
+  }, [filteredProducts, currentPage, productsPerPage])
+
+  // Determinar si se debe mostrar la paginación
+  const showPagination = !loading && !filterLoading && filteredProducts.length > 0 && totalPages > 1
 
   return (
     <div className="container px-4 md:px-6 py-12">
@@ -565,10 +754,20 @@ export default function ProductsPage() {
             {loading ? (
               <Skeleton className="h-5 w-40 mt-2" />
             ) : (
-              <p className="text-stone-600 mt-2">
-                Mostrando {filteredProducts.length}{' '}
-                {filteredProducts.length === 1 ? 'producto' : 'productos'}
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-stone-600">
+                  Mostrando{' '}
+                  {filteredProducts.length > 0
+                    ? `${(currentPage - 1) * productsPerPage + 1}-${Math.min(currentPage * productsPerPage, filteredProducts.length)} de ${filteredProducts.length}`
+                    : '0'}{' '}
+                  {filteredProducts.length === 1 ? 'producto' : 'productos'}
+                </p>
+                {totalPages > 1 && (
+                  <span className="text-stone-400 text-sm">
+                    (Página {currentPage} de {totalPages})
+                  </span>
+                )}
+              </div>
             )}
 
             {/* Active Filters */}
@@ -604,15 +803,15 @@ export default function ProductsPage() {
 
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array(6)
+              {Array(productsPerPage)
                 .fill(0)
                 .map((_, index) => (
                   <ProductSkeleton key={index} />
                 ))}
             </div>
-          ) : filterLoading ? (
+          ) : filterLoading || pageLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array(filteredProducts.length || 3)
+              {Array(currentProducts.length || productsPerPage)
                 .fill(0)
                 .map((_, index) => (
                   <ProductSkeleton key={index} />
@@ -620,7 +819,7 @@ export default function ProductsPage() {
             </div>
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
+              {currentProducts.map((product) => (
                 <Card key={product.id} className="overflow-hidden border-stone-200">
                   <Link href={`/productos/${product.id}`} className="relative block aspect-square">
                     <Image
@@ -655,23 +854,15 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {!loading && filteredProducts.length > 0 && (
-            <div className="flex justify-center mt-12">
-              <Button variant="outline" className="mx-2">
-                Anterior
-              </Button>
-              <Button variant="outline" className="mx-2">
-                1
-              </Button>
-              <Button variant="outline" className="mx-2">
-                2
-              </Button>
-              <Button variant="outline" className="mx-2">
-                3
-              </Button>
-              <Button variant="outline" className="mx-2">
-                Siguiente
-              </Button>
+          {/* Paginación */}
+          {showPagination && (
+            <div className="mt-12">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                loading={pageLoading}
+              />
             </div>
           )}
         </div>
