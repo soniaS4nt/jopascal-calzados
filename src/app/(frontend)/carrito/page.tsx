@@ -1,9 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronRight, Minus, Plus, Trash2 } from 'lucide-react'
+import { ChevronRight, Minus, Plus, Trash2, Download } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,6 +15,25 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { toast } from '@/components/ui/use-toast'
+
+// Tipos para los formularios
+type ShippingFormData = {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  address: string
+  city: string
+  region: string
+  postalCode: string
+  notes?: string
+}
+
+type PaymentFormData = {
+  paymentMethod: string
+  paymentProof?: FileList
+}
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState([
@@ -34,6 +56,33 @@ export default function CartPage() {
   ])
 
   const [activeStep, setActiveStep] = useState('cart')
+  const [orderNumber, setOrderNumber] = useState(
+    'ORD-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
+  )
+  const [shippingData, setShippingData] = useState<ShippingFormData | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Referencias para los formularios
+  const shippingFormRef = useRef(null)
+  const paymentFormRef = useRef(null)
+
+  // React Hook Form para el formulario de envío
+  const {
+    register: registerShipping,
+    handleSubmit: handleSubmitShipping,
+    formState: { errors: shippingErrors },
+  } = useForm<ShippingFormData>()
+
+  // React Hook Form para el formulario de pago
+  const {
+    register: registerPayment,
+    handleSubmit: handleSubmitPayment,
+    formState: { errors: paymentErrors },
+  } = useForm<PaymentFormData>({
+    defaultValues: {
+      paymentMethod: 'transfer',
+    },
+  })
 
   const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity < 1) return
@@ -42,8 +91,17 @@ export default function CartPage() {
     )
   }
 
-  const removeItem = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
+  interface CartItem {
+    id: number
+    name: string
+    price: number
+    quantity: number
+    size: string
+    image: string
+  }
+
+  const removeItem = (id: number): void => {
+    setCartItems(cartItems.filter((item: CartItem) => item.id !== id))
   }
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0)
@@ -58,6 +116,98 @@ export default function CartPage() {
     }).format(price)
   }
 
+  // Manejar envío del formulario de envío
+  const onShippingSubmit = (data: ShippingFormData) => {
+    setIsSubmitting(true)
+
+    // Simular procesamiento
+    setTimeout(() => {
+      setShippingData(data)
+      setActiveStep('payment')
+      setIsSubmitting(false)
+      toast({
+        title: 'Información de envío guardada',
+        description: 'Tus datos de envío han sido guardados correctamente.',
+      })
+    }, 1000)
+  }
+
+  // Manejar envío del formulario de pago
+  const onPaymentSubmit = (data: PaymentFormData) => {
+    setIsSubmitting(true)
+
+    // Simular procesamiento
+    setTimeout(() => {
+      setActiveStep('confirmation')
+      setIsSubmitting(false)
+      toast({
+        title: 'Pedido confirmado',
+        description: 'Tu pedido ha sido recibido correctamente.',
+      })
+    }, 1000)
+  }
+
+  // Generar y descargar el comprobante en PDF
+  const downloadReceipt = () => {
+    const doc = new jsPDF()
+
+    // Añadir título
+    doc.setFontSize(20)
+    doc.text('Comprobante de Pedido', 105, 20, { align: 'center' })
+
+    // Añadir información del pedido
+    doc.setFontSize(12)
+    doc.text(`Número de Pedido: ${orderNumber}`, 20, 40)
+    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 50)
+
+    // Añadir información del cliente
+    if (shippingData) {
+      doc.text('Información del Cliente:', 20, 70)
+      doc.text(`Nombre: ${shippingData.firstName} ${shippingData.lastName}`, 20, 80)
+      doc.text(`Email: ${shippingData.email}`, 20, 90)
+      doc.text(`Teléfono: ${shippingData.phone}`, 20, 100)
+      doc.text(`Dirección: ${shippingData.address}`, 20, 110)
+      doc.text(`Ciudad: ${shippingData.city}, ${shippingData.region}`, 20, 120)
+    }
+
+    // Añadir tabla de productos
+    const tableColumn = ['Producto', 'Cantidad', 'Precio', 'Total']
+    const tableRows = cartItems.map((item) => [
+      item.name,
+      item.quantity.toString(),
+      formatPrice(item.price),
+      formatPrice(item.price * item.quantity),
+    ])
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 140,
+    })
+
+    // Añadir resumen de costos
+    const finalY = (doc as any).lastAutoTable.finalY || 140
+    doc.text(`Subtotal: ${formatPrice(subtotal)}`, 150, finalY + 20, { align: 'right' })
+    doc.text(`Envío: ${formatPrice(shipping)}`, 150, finalY + 30, { align: 'right' })
+    doc.text(`Total: ${formatPrice(total)}`, 150, finalY + 40, { align: 'right' })
+
+    // Añadir instrucciones de pago
+    doc.text('Instrucciones de Pago:', 20, finalY + 60)
+    doc.text('1. Realiza la transferencia por el monto total indicado.', 20, finalY + 70)
+    doc.text(
+      '2. Envía el comprobante a pagos@cuerochile.cl indicando tu número de pedido.',
+      20,
+      finalY + 80,
+    )
+    doc.text('3. Recibirás un email confirmando la recepción de tu pago.', 20, finalY + 90)
+
+    // Añadir pie de página
+    doc.text('Gracias por tu compra en CueroChile', 105, finalY + 110, { align: 'center' })
+
+    // Guardar el PDF
+    doc.save(`comprobante-${orderNumber}.pdf`)
+  }
+
   return (
     <div className="container px-4 md:px-6 py-12">
       <div className="max-w-6xl mx-auto">
@@ -66,9 +216,15 @@ export default function CartPage() {
         <Tabs value={activeStep} onValueChange={setActiveStep} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="cart">Carrito</TabsTrigger>
-            <TabsTrigger value="shipping">Envío</TabsTrigger>
-            <TabsTrigger value="payment">Pago</TabsTrigger>
-            <TabsTrigger value="confirmation">Confirmación</TabsTrigger>
+            <TabsTrigger value="shipping" disabled={cartItems.length === 0}>
+              Envío
+            </TabsTrigger>
+            <TabsTrigger value="payment" disabled={!shippingData}>
+              Pago
+            </TabsTrigger>
+            <TabsTrigger value="confirmation" disabled={activeStep !== 'confirmation'}>
+              Confirmación
+            </TabsTrigger>
           </TabsList>
 
           {/* Cart Step */}
@@ -191,49 +347,166 @@ export default function CartPage() {
                     <CardTitle>Información de Envío</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <form className="space-y-6">
+                    <form
+                      id="shipping-form"
+                      ref={shippingFormRef}
+                      onSubmit={handleSubmitShipping(onShippingSubmit)}
+                      className="space-y-6"
+                    >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="first-name">Nombre</Label>
-                          <Input id="first-name" placeholder="Tu nombre" />
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName">
+                            Nombre <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="firstName"
+                            placeholder="Tu nombre"
+                            {...registerShipping('firstName', {
+                              required: 'El nombre es obligatorio',
+                            })}
+                            className={shippingErrors.firstName ? 'border-red-500' : ''}
+                          />
+                          {shippingErrors.firstName && (
+                            <p className="text-red-500 text-sm">
+                              {shippingErrors.firstName.message}
+                            </p>
+                          )}
                         </div>
-                        <div>
-                          <Label htmlFor="last-name">Apellido</Label>
-                          <Input id="last-name" placeholder="Tu apellido" />
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName">
+                            Apellido <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="lastName"
+                            placeholder="Tu apellido"
+                            {...registerShipping('lastName', {
+                              required: 'El apellido es obligatorio',
+                            })}
+                            className={shippingErrors.lastName ? 'border-red-500' : ''}
+                          />
+                          {shippingErrors.lastName && (
+                            <p className="text-red-500 text-sm">
+                              {shippingErrors.lastName.message}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <div>
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="tu@email.com" />
+                      <div className="space-y-2">
+                        <Label htmlFor="email">
+                          Email <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="tu@email.com"
+                          {...registerShipping('email', {
+                            required: 'El email es obligatorio',
+                            pattern: {
+                              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                              message: 'Email inválido',
+                            },
+                          })}
+                          className={shippingErrors.email ? 'border-red-500' : ''}
+                        />
+                        {shippingErrors.email && (
+                          <p className="text-red-500 text-sm">{shippingErrors.email.message}</p>
+                        )}
                       </div>
-                      <div>
-                        <Label htmlFor="phone">Teléfono</Label>
-                        <Input id="phone" placeholder="+56 9 1234 5678" />
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">
+                          Teléfono <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="phone"
+                          placeholder="+56 9 1234 5678"
+                          {...registerShipping('phone', {
+                            required: 'El teléfono es obligatorio',
+                            pattern: {
+                              value: /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/,
+                              message: 'Teléfono inválido',
+                            },
+                          })}
+                          className={shippingErrors.phone ? 'border-red-500' : ''}
+                        />
+                        {shippingErrors.phone && (
+                          <p className="text-red-500 text-sm">{shippingErrors.phone.message}</p>
+                        )}
                       </div>
-                      <div>
-                        <Label htmlFor="address">Dirección</Label>
-                        <Input id="address" placeholder="Calle, número, depto." />
+                      <div className="space-y-2">
+                        <Label htmlFor="address">
+                          Dirección <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="address"
+                          placeholder="Calle, número, depto."
+                          {...registerShipping('address', {
+                            required: 'La dirección es obligatoria',
+                          })}
+                          className={shippingErrors.address ? 'border-red-500' : ''}
+                        />
+                        {shippingErrors.address && (
+                          <p className="text-red-500 text-sm">{shippingErrors.address.message}</p>
+                        )}
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="city">Ciudad</Label>
-                          <Input id="city" placeholder="Ciudad" />
+                        <div className="space-y-2">
+                          <Label htmlFor="city">
+                            Ciudad <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="city"
+                            placeholder="Ciudad"
+                            {...registerShipping('city', {
+                              required: 'La ciudad es obligatoria',
+                            })}
+                            className={shippingErrors.city ? 'border-red-500' : ''}
+                          />
+                          {shippingErrors.city && (
+                            <p className="text-red-500 text-sm">{shippingErrors.city.message}</p>
+                          )}
                         </div>
-                        <div>
-                          <Label htmlFor="region">Región</Label>
-                          <Input id="region" placeholder="Región" />
+                        <div className="space-y-2">
+                          <Label htmlFor="region">
+                            Región <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="region"
+                            placeholder="Región"
+                            {...registerShipping('region', {
+                              required: 'La región es obligatoria',
+                            })}
+                            className={shippingErrors.region ? 'border-red-500' : ''}
+                          />
+                          {shippingErrors.region && (
+                            <p className="text-red-500 text-sm">{shippingErrors.region.message}</p>
+                          )}
                         </div>
-                        <div>
-                          <Label htmlFor="postal-code">Código Postal</Label>
-                          <Input id="postal-code" placeholder="Código postal" />
+                        <div className="space-y-2">
+                          <Label htmlFor="postalCode">
+                            Código Postal <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="postalCode"
+                            placeholder="Código postal"
+                            {...registerShipping('postalCode', {
+                              required: 'El código postal es obligatorio',
+                            })}
+                            className={shippingErrors.postalCode ? 'border-red-500' : ''}
+                          />
+                          {shippingErrors.postalCode && (
+                            <p className="text-red-500 text-sm">
+                              {shippingErrors.postalCode.message}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="notes">Notas de Entrega (opcional)</Label>
                         <Textarea
                           id="notes"
                           placeholder="Instrucciones especiales para la entrega"
                           rows={3}
+                          {...registerShipping('notes')}
                         />
                       </div>
                     </form>
@@ -242,9 +515,9 @@ export default function CartPage() {
                     <Button variant="outline" onClick={() => setActiveStep('cart')}>
                       Volver al Carrito
                     </Button>
-                    <Button onClick={() => setActiveStep('payment')}>
-                      Continuar al Pago
-                      <ChevronRight className="ml-2 h-4 w-4" />
+                    <Button type="submit" form="shipping-form" disabled={isSubmitting}>
+                      {isSubmitting ? 'Guardando...' : 'Continuar al Pago'}
+                      {!isSubmitting && <ChevronRight className="ml-2 h-4 w-4" />}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -294,85 +567,103 @@ export default function CartPage() {
                     <CardTitle>Método de Pago</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-6">
-                      <RadioGroup defaultValue="transfer" className="space-y-4">
-                        <div className="flex items-start space-x-2 border p-4 rounded-md">
-                          <RadioGroupItem value="transfer" id="transfer" className="mt-1" />
-                          <div className="grid gap-1.5">
-                            <Label htmlFor="transfer" className="font-medium">
-                              Transferencia Bancaria
+                    <form
+                      id="payment-form"
+                      ref={paymentFormRef}
+                      onSubmit={handleSubmitPayment(onPaymentSubmit)}
+                      className="space-y-6"
+                    >
+                      <div className="space-y-4">
+                        <RadioGroup
+                          defaultValue="transfer"
+                          className="space-y-4"
+                          {...registerPayment('paymentMethod', { required: true })}
+                        >
+                          <div className="flex items-start space-x-2 border p-4 rounded-md">
+                            <RadioGroupItem value="transfer" id="transfer" className="mt-1" />
+                            <div className="grid gap-1.5">
+                              <Label htmlFor="transfer" className="font-medium">
+                                Transferencia Bancaria
+                              </Label>
+                              <p className="text-sm text-stone-600">
+                                Realiza una transferencia a nuestra cuenta bancaria. Tu pedido será
+                                procesado una vez que confirmemos el pago.
+                              </p>
+                            </div>
+                          </div>
+                        </RadioGroup>
+
+                        <div className="border p-4 rounded-md space-y-4">
+                          <h3 className="font-medium">Datos para la Transferencia</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-stone-600">Nombre:</p>
+                              <p className="font-medium">CueroChile SpA</p>
+                            </div>
+                            <div>
+                              <p className="text-stone-600">RUT:</p>
+                              <p className="font-medium">76.123.456-7</p>
+                            </div>
+                            <div>
+                              <p className="text-stone-600">Banco:</p>
+                              <p className="font-medium">Banco de Chile</p>
+                            </div>
+                            <div>
+                              <p className="text-stone-600">Tipo de Cuenta:</p>
+                              <p className="font-medium">Cuenta Corriente</p>
+                            </div>
+                            <div>
+                              <p className="text-stone-600">N° de Cuenta:</p>
+                              <p className="font-medium">00-123-45678-90</p>
+                            </div>
+                            <div>
+                              <p className="text-stone-600">Email:</p>
+                              <p className="font-medium">pagos@cuerochile.cl</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <h4 className="font-medium">Instrucciones:</h4>
+                            <ol className="list-decimal list-inside text-sm space-y-1 text-stone-600">
+                              <li>
+                                Realiza la transferencia por el monto total: {formatPrice(total)}
+                              </li>
+                              <li>
+                                En el asunto o comentario incluye tu nombre y número de pedido
+                              </li>
+                              <li>
+                                Envía el comprobante de transferencia a pagos@cuerochile.cl o súbelo
+                                en el siguiente paso
+                              </li>
+                            </ol>
+                          </div>
+
+                          <div className="pt-4 border-t space-y-2">
+                            <Label htmlFor="payment-proof" className="block">
+                              Comprobante de Pago (opcional)
                             </Label>
-                            <p className="text-sm text-stone-600">
-                              Realiza una transferencia a nuestra cuenta bancaria. Tu pedido será
-                              procesado una vez que confirmemos el pago.
+                            <Input
+                              id="payment-proof"
+                              type="file"
+                              accept="image/*,.pdf"
+                              {...registerPayment('paymentProof')}
+                            />
+                            <p className="text-xs text-stone-500">
+                              Puedes subir el comprobante ahora o enviarlo por email después de
+                              completar tu pedido.
                             </p>
                           </div>
                         </div>
-                      </RadioGroup>
-
-                      <div className="border p-4 rounded-md space-y-4">
-                        <h3 className="font-medium">Datos para la Transferencia</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="text-stone-600">Nombre:</p>
-                            <p className="font-medium">CueroChile SpA</p>
-                          </div>
-                          <div>
-                            <p className="text-stone-600">RUT:</p>
-                            <p className="font-medium">76.123.456-7</p>
-                          </div>
-                          <div>
-                            <p className="text-stone-600">Banco:</p>
-                            <p className="font-medium">Banco de Chile</p>
-                          </div>
-                          <div>
-                            <p className="text-stone-600">Tipo de Cuenta:</p>
-                            <p className="font-medium">Cuenta Corriente</p>
-                          </div>
-                          <div>
-                            <p className="text-stone-600">N° de Cuenta:</p>
-                            <p className="font-medium">00-123-45678-90</p>
-                          </div>
-                          <div>
-                            <p className="text-stone-600">Email:</p>
-                            <p className="font-medium">pagos@cuerochile.cl</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <h4 className="font-medium">Instrucciones:</h4>
-                          <ol className="list-decimal list-inside text-sm space-y-1 text-stone-600">
-                            <li>
-                              Realiza la transferencia por el monto total: {formatPrice(total)}
-                            </li>
-                            <li>En el asunto o comentario incluye tu nombre y número de pedido</li>
-                            <li>
-                              Envía el comprobante de transferencia a pagos@cuerochile.cl o súbelo
-                              en el siguiente paso
-                            </li>
-                          </ol>
-                        </div>
-
-                        <div className="pt-4 border-t">
-                          <Label htmlFor="payment-proof" className="block mb-2">
-                            Comprobante de Pago (opcional)
-                          </Label>
-                          <Input id="payment-proof" type="file" />
-                          <p className="text-xs text-stone-500 mt-1">
-                            Puedes subir el comprobante ahora o enviarlo por email después de
-                            completar tu pedido.
-                          </p>
-                        </div>
                       </div>
-                    </div>
+                    </form>
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <Button variant="outline" onClick={() => setActiveStep('shipping')}>
                       Volver al Envío
                     </Button>
-                    <Button onClick={() => setActiveStep('confirmation')}>
-                      Confirmar Pedido
-                      <ChevronRight className="ml-2 h-4 w-4" />
+                    <Button type="submit" form="payment-form" disabled={isSubmitting}>
+                      {isSubmitting ? 'Procesando...' : 'Confirmar Pedido'}
+                      {!isSubmitting && <ChevronRight className="ml-2 h-4 w-4" />}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -440,7 +731,7 @@ export default function CartPage() {
                     transferencia bancaria.
                   </p>
                   <div className="bg-stone-50 p-4 rounded-md inline-block mx-auto">
-                    <p className="font-medium">Número de Pedido: #ORD-2023-1234</p>
+                    <p className="font-medium">Número de Pedido: {orderNumber}</p>
                   </div>
                 </div>
 
@@ -534,16 +825,26 @@ export default function CartPage() {
                         <h4 className="font-medium text-sm text-stone-600 mb-2">
                           Información de Contacto
                         </h4>
-                        <p className="text-sm">Juan Pérez</p>
-                        <p className="text-sm">juan.perez@email.com</p>
-                        <p className="text-sm">+56 9 8765 4321</p>
+                        {shippingData ? (
+                          <>
+                            <p className="text-sm">
+                              {shippingData.firstName} {shippingData.lastName}
+                            </p>
+                            <p className="text-sm">{shippingData.email}</p>
+                            <p className="text-sm">{shippingData.phone}</p>
 
-                        <h4 className="font-medium text-sm text-stone-600 mt-4 mb-2">
-                          Dirección de Envío
-                        </h4>
-                        <p className="text-sm">Av. Providencia 1234, Depto 56</p>
-                        <p className="text-sm">Providencia, Santiago</p>
-                        <p className="text-sm">Región Metropolitana, Chile</p>
+                            <h4 className="font-medium text-sm text-stone-600 mt-4 mb-2">
+                              Dirección de Envío
+                            </h4>
+                            <p className="text-sm">{shippingData.address}</p>
+                            <p className="text-sm">
+                              {shippingData.city}, {shippingData.region}
+                            </p>
+                            <p className="text-sm">{shippingData.postalCode}</p>
+                          </>
+                        ) : (
+                          <p className="text-sm text-stone-500">Información no disponible</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -552,7 +853,14 @@ export default function CartPage() {
                     <Button asChild>
                       <Link href="/">Volver al Inicio</Link>
                     </Button>
-                    <Button variant="outline">Descargar Comprobante</Button>
+                    <Button
+                      variant="outline"
+                      onClick={downloadReceipt}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Descargar Comprobante
+                    </Button>
                   </div>
                 </div>
               </CardContent>
